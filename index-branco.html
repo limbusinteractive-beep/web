@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+<title>LIMBUS Branco</title>
+<meta name="description" content="LIMBUS — estúdio de experiências interativas: jogo, biomateriais, biossensores, luz e som. Em colaboração com comunidades e empresas.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@200;300;400;500&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  color-scheme: light;
+  --paper:#fbfbfa;
+  --graphite:#3f4042;
+  --ink:#1d1e20;
+  --mid:#7d7f83;
+  --faint:#b4b6b9;
+  --hair:rgba(29,30,32,.12);
+  --glass:rgba(251,251,250,.9);
+  --sans:"Jost","Futura","Century Gothic","Helvetica Neue",Arial,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --gutter:clamp(16px,4vw,56px);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;background:var(--paper)}
+body{margin:0;background:var(--paper);color:var(--graphite);font-family:var(--sans);font-weight:300;font-size:17px;line-height:1.6;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+@media (pointer:fine){body,a,button{cursor:none}}
+
+#stage{position:fixed;inset:0;width:100%;height:100%;z-index:0;display:block;background:var(--paper);opacity:0;transition:opacity 1.4s ease}
+#stage.on{opacity:1}
+main,header.nav,footer{position:relative;z-index:2}
+
+.ring{position:fixed;left:0;top:0;width:30px;height:30px;margin:-15px 0 0 -15px;border:1px solid var(--ink);border-radius:50%;z-index:50;pointer-events:none;transition:width .25s,height .25s,margin .25s,background .25s;will-change:transform}
+.ring.big{width:58px;height:58px;margin:-29px 0 0 -29px;background:rgba(29,30,32,.04)}
+@media (pointer:coarse){.ring{display:none}}
+
+.nav{position:fixed;top:0;left:0;right:0;z-index:10;padding:calc(env(safe-area-inset-top,0px) + 18px) var(--gutter) 18px;display:flex;align-items:center;justify-content:space-between;gap:24px;background:linear-gradient(180deg,rgba(251,251,250,.92),rgba(251,251,250,0))}
+.nav .mini{width:96px;height:auto;display:block;fill:none;stroke:var(--graphite);stroke-width:6}
+.nav ul{display:flex;gap:30px;list-style:none;margin:0;padding:0}
+.nav a{color:var(--mid);text-decoration:none;font-family:var(--mono);font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;transition:color .2s}
+.nav a:hover,.nav a:focus-visible{color:var(--ink)}
+a:focus-visible,button:focus-visible{outline:1px solid var(--ink);outline-offset:4px}
+@media (max-width:760px){.nav ul li:not(:last-child){display:none}}
+
+.wrap{max-width:1180px;margin:0 auto;padding-inline:var(--gutter)}
+.label{font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--mid)}
+section{position:relative}
+
+/* hero */
+.hero{min-height:92svh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding-block:130px 70px;perspective:1000px}
+.logo{width:min(440px,78vw);height:auto;overflow:visible;transform-style:preserve-3d;will-change:transform}
+.logo path{fill:none;stroke:var(--graphite);stroke-width:3.4}
+@media (prefers-reduced-motion:no-preference){
+  .logo path{stroke-dasharray:1;stroke-dashoffset:1;animation:draw 1.8s cubic-bezier(.6,.05,.25,1) forwards}
+  .logo .g:nth-child(2) path{animation-delay:.12s}.logo .g:nth-child(3) path{animation-delay:.24s}
+  .logo .g:nth-child(4) path{animation-delay:.36s}.logo .g:nth-child(5) path{animation-delay:.48s}.logo .g:nth-child(6) path{animation-delay:.6s}
+}
+@keyframes draw{to{stroke-dashoffset:0}}
+.claim{margin:120px auto 0;font-size:clamp(20px,2.2vw,26px);font-weight:300;color:var(--ink);line-height:1.35;max-width:24ch;text-wrap:balance}
+.btn{display:inline-flex;align-items:center;gap:10px;margin-top:44px;padding:15px 32px;border:1px solid var(--ink);color:var(--ink);text-decoration:none;font-weight:400;font-size:15px;letter-spacing:.14em;text-transform:uppercase;background:rgba(251,251,250,.6);transition:background .3s,color .3s}
+.btn:hover{background:var(--ink);color:var(--paper)}
+
+
+/* statement */
+.statement{padding-block:clamp(110px,15vw,190px)}
+.ghost{position:absolute;left:0;top:50%;margin-top:-.5em;font-weight:200;font-size:clamp(120px,22vw,340px);line-height:1;white-space:nowrap;color:transparent;-webkit-text-stroke:1px rgba(29,30,32,.07);pointer-events:none;will-change:transform;letter-spacing:.06em}
+.statement p{font-weight:200;font-size:clamp(36px,5.6vw,76px);line-height:1.04;margin:0;max-width:16ch;color:var(--ink);text-wrap:balance;position:relative}
+.statement p em{font-style:normal;font-weight:400}
+
+.sec-head{display:flex;justify-content:space-between;align-items:end;gap:24px;flex-wrap:wrap;border-bottom:1px solid var(--hair);padding-bottom:22px;margin-bottom:48px}
+.sec-head h2{font-weight:200;font-size:clamp(44px,6.4vw,88px);line-height:.95;margin:8px 0 0;color:var(--ink);text-wrap:balance}
+.sec-head p{margin:0;max-width:30ch;color:var(--mid);font-size:16px}
+
+/* capacidades */
+.caps{padding-block:30px 120px}
+.cap-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:var(--hair);border:1px solid var(--hair);perspective:1200px}
+.cap{background:var(--glass);padding:clamp(24px,3vw,38px);display:flex;flex-direction:column;gap:14px;min-height:300px;transition:transform .5s cubic-bezier(.2,.8,.2,1),background .3s;position:relative}
+.cap:hover{background:rgba(255,255,255,.92);z-index:1}
+.cap .glyph{width:54px;height:54px;fill:none;stroke:var(--ink);stroke-width:1.2}
+.cap h3{font-weight:300;font-size:clamp(30px,3.2vw,42px);margin:auto 0 0;color:var(--ink);line-height:1}
+.cap p{margin:0;color:var(--mid);font-size:15.5px;max-width:30ch}
+.cap.key h3{font-weight:400}
+.cap.key::after{content:"núcleo";position:absolute;top:clamp(24px,3vw,38px);right:clamp(24px,3vw,38px);font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink);border:1px solid var(--ink);padding:3px 8px;border-radius:30px}
+@media (max-width:900px){.cap-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:560px){.cap-grid{grid-template-columns:1fr}.cap{min-height:220px}}
+
+/* sensor demo */
+.sensor{padding-block:90px 120px}
+.sensor-box{border:1px solid var(--hair);background:rgba(251,251,250,.92);}
+.sensor-top{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;padding:14px 20px;border-bottom:1px solid var(--hair)}
+.sensor-top .live{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink)}
+.sensor-top .live i{width:7px;height:7px;border-radius:50%;background:var(--ink);animation:pulse 1.2s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.2}}
+#scope{display:block;width:100%;height:clamp(240px,34vw,380px);touch-action:pan-y}
+.readouts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-top:1px solid var(--hair)}
+.readouts div{padding:14px 20px;border-right:1px solid var(--hair);font-family:var(--mono);font-size:11px;color:var(--mid);letter-spacing:.1em;text-transform:uppercase}
+.readouts div:last-child{border-right:0}
+.readouts b{display:block;font-family:var(--sans);font-weight:300;font-size:28px;color:var(--ink);letter-spacing:0;text-transform:none;font-variant-numeric:tabular-nums;margin-top:2px}
+.sensor-note{margin:18px 0 0;color:var(--mid);font-size:15px;max-width:60ch}
+@media (max-width:560px){.readouts div{padding:12px}.readouts b{font-size:22px}}
+
+/* colaborar */
+.collab{padding-block:90px 120px}
+.who{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(20px,3vw,40px)}
+.who article{border-top:1px solid var(--ink);padding-top:22px;display:flex;flex-direction:column;gap:12px}
+.who h3{font-weight:300;font-size:clamp(26px,2.6vw,34px);margin:0;color:var(--ink);line-height:1.05}
+.who ul{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.who li{font-size:15.5px;color:var(--graphite)}
+.who li::before{content:"↗ ";color:var(--faint)}
+.values{display:flex;flex-wrap:wrap;gap:10px;margin-top:64px}
+.values span{font-weight:300;font-size:clamp(18px,1.8vw,22px);color:var(--ink);border:1px solid var(--hair);padding:10px 22px;border-radius:60px;background:rgba(251,251,250,.7);transition:border-color .2s,background .2s}
+.values span:hover{border-color:var(--ink);background:#fff}
+@media (max-width:820px){.who{grid-template-columns:1fr}}
+
+/* contacto */
+.contact{padding-block:120px 110px;text-align:center}
+.contact h2{font-weight:200;font-size:clamp(52px,9vw,136px);line-height:.92;margin:14px 0 0;color:var(--ink);text-wrap:balance}
+.mailbox{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:14px;margin-top:44px}
+.mailbox a{font-family:var(--mono);font-size:clamp(15px,1.8vw,20px);color:var(--ink);text-decoration:none;border-bottom:1px solid var(--ink);padding-bottom:4px;word-break:break-all}
+.ghostbtn{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;background:transparent;color:var(--ink);border:1px solid var(--hair);padding:8px 12px;transition:border-color .2s}
+.ghostbtn:hover{border-color:var(--ink)}
+
+footer{border-top:1px solid var(--hair);padding-block:28px calc(28px + env(safe-area-inset-bottom,0px));font-family:var(--mono);font-size:11px;color:var(--mid);letter-spacing:.1em;background:rgba(251,251,250,.85)}
+footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}
+</style>
+</head>
+<body>
+<canvas id="stage" aria-hidden="true"></canvas>
+<div class="ring" id="ring" aria-hidden="true"></div>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="wm" viewBox="-4 -4 444 108">
+    <path d="M3 0 V96 H59"/><path d="M77 0 V96"/><path d="M108 96 V0 L142 72 L176 0 V96 H120"/>
+    <path d="M205 96 V0 H234 A22 22 0 0 1 234 46 H205 M234 46 H238 A25 25 0 0 1 238 96 H205"/>
+    <path d="M285 0 V64 A32 32 0 0 0 349 64 V0 H297"/>
+    <path d="M428 18 C420 2 374 -2 374 26 C374 50 432 42 432 72 C432 100 382 102 372 84"/>
+  </symbol>
+</svg>
+
+<header class="nav">
+  <a href="#top" aria-label="LIMBUS, início"><svg class="mini" viewBox="-4 -4 444 108"><use href="#wm"/></svg></a>
+  <ul>
+    <li><a href="#fazemos">Fazemos</a></li>
+    <li><a href="#sensor">Demo</a></li>
+    <li><a href="#colaborar">Colaborar</a></li>
+    <li><a href="#contacto">Contacto ↗</a></li>
+  </ul>
+</header>
+
+<main id="top">
+  <section class="hero wrap">
+    <h1 style="margin:0">
+      <svg class="logo" id="logo" viewBox="-4 -4 444 108" role="img" aria-label="LIMBUS">
+        <g class="g" data-z="40"><path pathLength="1" d="M3 0 V96 H59"/></g>
+        <g class="g" data-z="10"><path pathLength="1" d="M77 0 V96"/></g>
+        <g class="g" data-z="60"><path pathLength="1" d="M108 96 V0 L142 72 L176 0 V96 H120"/></g>
+        <g class="g" data-z="20"><path pathLength="1" d="M205 96 V0 H234 A22 22 0 0 1 234 46 H205 M234 46 H238 A25 25 0 0 1 238 96 H205"/></g>
+        <g class="g" data-z="50"><path pathLength="1" d="M285 0 V64 A32 32 0 0 0 349 64 V0 H297"/></g>
+        <g class="g" data-z="30"><path pathLength="1" d="M428 18 C420 2 374 -2 374 26 C374 50 432 42 432 72 C432 100 382 102 372 84"/></g>
+      </svg>
+    </h1>
+    <p class="claim" data-depth="0.08">Experiências interativas e imersivas, pensadas para serem vividas por todas as pessoas.</p>
+    <a class="btn" href="#contacto" data-depth="0.12">Colaborar ↗</a>
+  </section>
+
+  <section class="statement">
+    <div class="ghost" data-shift="0.35">PARA TODOS · PARA TODOS</div>
+    <div class="wrap">
+      <p data-depth="0.05">Tecnologia que se adapta às pessoas. Experiências <em>acessíveis</em>, <em>intuitivas</em> e abertas a todos os públicos.</p>
+    </div>
+  </section>
+
+  <section class="caps" id="fazemos">
+    <div class="wrap">
+      <div class="sec-head">
+        <h2>O que fazemos</h2>
+        <p>Da investigação à operação, cada projeto é desenvolvido pela nossa equipa.</p>
+      </div>
+      <div class="cap-grid">
+        <article class="cap tilt key">
+          <svg class="glyph" viewBox="0 0 54 54"><circle cx="27" cy="27" r="6"/><circle cx="27" cy="27" r="15"/><circle cx="27" cy="27" r="25"/></svg>
+          <h3>Interação</h3>
+          <p>Ambientes que respondem ao gesto, à voz e à presença, sem necessidade de instruções.</p>
+        </article>
+        <article class="cap tilt key">
+          <svg class="glyph" viewBox="0 0 54 54"><rect x="3" y="15" width="48" height="24" rx="12"/><path d="M15 21v12M9 27h12"/><circle cx="37" cy="24" r="2"/><circle cx="42" cy="30" r="2"/></svg>
+          <h3>Gaming</h3>
+          <p>Jogos físicos e colaborativos para todas as idades, em festivais, museus e espaços de marca.</p>
+        </article>
+        <article class="cap tilt key">
+          <svg class="glyph" viewBox="0 0 54 54"><path d="M27 51V27"/><path d="M27 33C27 22 18 16 6 16c0 11 9 17 21 17z"/><path d="M27 27c0-12 9-20 21-20 0 12-9 20-21 20z"/></svg>
+          <h3>Biomateriais</h3>
+          <p>Materiais vivos e sustentáveis, como micélio e algas, aplicados como superfície e interface.</p>
+        </article>
+        <article class="cap tilt key">
+          <svg class="glyph" viewBox="0 0 54 54"><path d="M2 30h10l4-12 6 24 6-30 5 18h19"/></svg>
+          <h3>Biossensores</h3>
+          <p>Sinais fisiológicos, como EEG, ritmo cardíaco e respiração, captados de forma não invasiva e traduzidos em luz e som.</p>
+        </article>
+        <article class="cap tilt">
+          <svg class="glyph" viewBox="0 0 54 54"><path d="M4 12l20 6v24L4 48z"/><path d="M24 18l26-8v38l-26-6"/></svg>
+          <h3>Videomapping</h3>
+          <p>Projeção em fachadas, palcos e cenografia digital, com operação ao vivo.</p>
+        </article>
+        <article class="cap tilt">
+          <svg class="glyph" viewBox="0 0 54 54"><path d="M4 44h46"/><path d="M10 44V30M20 44V18M30 44V24M40 44V8"/></svg>
+          <h3>Dados & ciência</h3>
+          <p>Visualização de dados e divulgação científica através de instalações que se exploram livremente.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="sensor" id="sensor">
+    <div class="wrap">
+      <div class="sec-head">
+        <div><span class="label">Demonstração</span><h2>Sinais em tempo real</h2></div>
+        <p>Mova o cursor ou o dedo sobre o gráfico.</p>
+      </div>
+      <div class="sensor-box">
+        <div class="sensor-top"><span class="live"><i></i>Ao vivo</span><span class="label" id="state">Em repouso</span></div>
+        <canvas id="scope" aria-label="Simulação de sinais biológicos que reage ao movimento do cursor"></canvas>
+        <div class="readouts">
+          <div>Pulso<b id="r-bpm">64</b></div>
+          <div>Condutância<b id="r-eda">2.1 µS</b></div>
+          <div>Movimento<b id="r-mov">0 %</b></div>
+        </div>
+      </div>
+      <p class="sensor-note">Demonstração simulada. Nas nossas instalações, os sinais do público são captados sem contacto invasivo e conduzem luz, som e imagem em tempo real.</p>
+    </div>
+  </section>
+
+  <section class="collab" id="colaborar">
+    <div class="ghost" data-shift="-0.3">JUNTOS · JUNTOS · JUNTOS</div>
+    <div class="wrap">
+      <div class="sec-head">
+        <div><span class="label">Colaborar</span><h2>Construímos em conjunto</h2></div>
+        <p>Trabalhamos lado a lado com comunidades, empresas e instituições.</p>
+      </div>
+      <div class="who">
+        <article>
+          <span class="label">01</span>
+          <h3>Comunidade</h3>
+          <ul><li>Workshops e formação abertos</li><li>Residências e laboratórios</li><li>Ferramentas e conhecimento partilhados</li></ul>
+        </article>
+        <article>
+          <span class="label">02</span>
+          <h3>Empresas & marcas</h3>
+          <ul><li>Ativações interativas</li><li>Instalações à medida</li><li>Acompanhamento do conceito à operação</li></ul>
+        </article>
+        <article>
+          <span class="label">03</span>
+          <h3>Cultura & ciência</h3>
+          <ul><li>Festivais e museus</li><li>Universidades e centros de ciência</li><li>Obras próprias em itinerância</li></ul>
+        </article>
+      </div>
+      <div class="values" aria-label="Valores">
+        <span>Acessível</span><span>Aberto</span><span>Colaborativo</span><span>Sustentável</span><span>Lúdico</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="contact" id="contacto">
+    <div class="wrap">
+      <span class="label">Contacto</span>
+      <h2>Vamos criar juntos</h2>
+      <div class="mailbox">
+        <a href="mailto:limbus.interactive@gmail.com" id="mail">limbus.interactive@gmail.com</a>
+        <button type="button" class="ghostbtn" id="copymail">Copiar</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap"><span>LIMBUS · limbusinteractive.com</span><span>Arte · ciência · tecnologia</span></div>
+</footer>
+
+<script>
+(function(){
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const coarse = matchMedia('(pointer: coarse)').matches;
+  const mouse = {x:.5,y:.5,sx:.5,sy:.5,px:innerWidth/2,py:innerHeight/2,rx:innerWidth/2,ry:innerHeight/2};
+  let scrollY = window.scrollY, progress = 0, maxScroll = 1;
+  addEventListener('pointermove', e=>{ mouse.x=e.clientX/innerWidth; mouse.y=e.clientY/innerHeight; mouse.px=e.clientX; mouse.py=e.clientY; }, {passive:true});
+  addEventListener('scroll', ()=>{ scrollY = window.scrollY; }, {passive:true});
+
+  const ring = document.getElementById('ring');
+  document.querySelectorAll('a,button,.tilt,.values span,#scope').forEach(el=>{
+    el.addEventListener('pointerenter', ()=>ring.classList.add('big'));
+    el.addEventListener('pointerleave', ()=>ring.classList.remove('big'));
+  });
+
+  /* ---------- WebGL: carregado só depois da página aparecer ---------- */
+  let gl3 = null;
+  function initGL(){
+    try{
+      const canvas = document.getElementById('stage');
+      const renderer = new THREE.WebGLRenderer({canvas, antialias:!coarse, alpha:false, powerPreference:'low-power'});
+      let dpr = coarse ? 1 : Math.min(devicePixelRatio,1.25);
+      let SMOKE = coarse ? .18 : .28;            // fumo em baixa resolução, ampliado
+      renderer.setPixelRatio(dpr);
+      renderer.autoClear = false;
+
+      const quadVS = `varying vec2 vUv; void main(){vUv=uv; gl_Position=vec4(position.xy,0.,1.);}`;
+      const bgCam = new THREE.OrthographicCamera(-1,1,1,-1,0,1);
+      const rt = new THREE.WebGLRenderTarget(4,4,{minFilter:THREE.LinearFilter,magFilter:THREE.LinearFilter,depthBuffer:false,stencilBuffer:false});
+      const U = {uT:{value:0},uRes:{value:new THREE.Vector2(4,4)},uMouse:{value:new THREE.Vector2(.5,.5)},uScroll:{value:0}};
+      const smokeScene = new THREE.Scene();
+      smokeScene.add(new THREE.Mesh(new THREE.PlaneGeometry(2,2), new THREE.ShaderMaterial({
+        uniforms:U, depthWrite:false, depthTest:false, vertexShader:quadVS,
+        fragmentShader:`
+          precision mediump float;
+          uniform float uT; uniform vec2 uRes; uniform vec2 uMouse; uniform float uScroll; varying vec2 vUv;
+          float hash(vec2 p){p=fract(p*vec2(123.34,456.21));p+=dot(p,p+45.32);return fract(p.x*p.y);}
+          float noise(vec2 p){vec2 i=floor(p),f=fract(p);vec2 u=f*f*(3.-2.*f);
+            return mix(mix(hash(i),hash(i+vec2(1,0)),u.x),mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),u.x),u.y);}
+          float fbm(vec2 p){float v=0.,a=.5;mat2 m=mat2(1.6,1.2,-1.2,1.6);for(int i=0;i<4;i++){v+=a*noise(p);p=m*p;a*=.5;}return v;}
+          void main(){
+            vec2 p=(gl_FragCoord.xy-.5*uRes)/uRes.y;
+            float t=uT*.04;
+            vec2 m=(uMouse-.5)*vec2(uRes.x/uRes.y,1.);
+            vec2 d=p-m; float md=length(d);
+            vec2 sw=vec2(-d.y,d.x)*.4*exp(-md*2.4);
+            vec2 q=vec2(fbm(p*1.2+vec2(0.,t)),fbm(p*1.2+vec2(5.2,-t*.8)));
+            float s=fbm(p*1.6+q*2.4+sw+vec2(0.,-uScroll*.8+t*.6));
+            s=smoothstep(.35,.95,s);
+            vec3 col=mix(vec3(.984,.984,.98),vec3(.80,.81,.82),s*.55);
+            col=mix(col,vec3(.72,.73,.75),s*.25*exp(-md*3.));
+            vec2 uv=vUv-.5; col-=dot(uv,uv)*.05;
+            gl_FragColor=vec4(col,1.);
+          }`
+      })));
+      const blitScene = new THREE.Scene();
+      blitScene.add(new THREE.Mesh(new THREE.PlaneGeometry(2,2), new THREE.ShaderMaterial({
+        uniforms:{tex:{value:rt.texture}}, depthWrite:false, depthTest:false, vertexShader:quadVS,
+        fragmentShader:`precision mediump float; uniform sampler2D tex; varying vec2 vUv; void main(){gl_FragColor=texture2D(tex,vUv);}`
+      })));
+
+      const scene = new THREE.Scene();
+      scene.fog = new THREE.FogExp2(0xfbfbfa, 0.055);
+      const cam = new THREE.PerspectiveCamera(55,1,.1,200); cam.position.set(0,0,7);
+      const INK = 0x1d1e20;
+      const K = coarse ? .55 : 1;
+
+      function network(R, strands, steps, jitter){
+        const pts=[], v=new THREE.Vector3(), dir=new THREE.Vector3(), tmp=new THREE.Vector3(), a=new THREE.Vector3();
+        for(let s=0;s<strands;s++){
+          v.set(Math.random()-.5,Math.random()-.5,Math.random()-.5).normalize().multiplyScalar(R);
+          dir.set(Math.random()-.5,Math.random()-.5,Math.random()-.5).normalize();
+          for(let k=0;k<steps;k++){
+            a.copy(v);
+            dir.add(tmp.set(Math.random()-.5,Math.random()-.5,Math.random()-.5).multiplyScalar(jitter)).normalize();
+            v.addScaledVector(dir,.12+Math.random()*.1); v.setLength(R*(.96+Math.random()*.08));
+            pts.push(a.x,a.y,a.z,v.x,v.y,v.z);
+          }
+        }
+        const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.Float32BufferAttribute(pts,3)); return g;
+      }
+      const net=new THREE.LineSegments(network(3.4,Math.round(130*K),20,.9),new THREE.LineBasicMaterial({color:INK,transparent:true,opacity:.13}));
+      const net2=new THREE.LineSegments(network(1.6,Math.round(60*K),14,1.2),new THREE.LineBasicMaterial({color:INK,transparent:true,opacity:.2}));
+      const core=new THREE.Group(); core.add(net,net2); scene.add(core);
+
+      const sc=document.createElement('canvas'); sc.width=sc.height=32; const sx=sc.getContext('2d');
+      const gr=sx.createRadialGradient(16,16,0,16,16,16); gr.addColorStop(0,'rgba(255,255,255,1)'); gr.addColorStop(.4,'rgba(255,255,255,.5)'); gr.addColorStop(1,'rgba(255,255,255,0)');
+      sx.fillStyle=gr; sx.fillRect(0,0,32,32); const sprite=new THREE.CanvasTexture(sc);
+
+      const nodeArr=[], np=net2.geometry.attributes.position.array;
+      for(let i=0;i<np.length;i+=36) nodeArr.push(np[i],np[i+1],np[i+2]);
+      core.add(new THREE.Points(new THREE.BufferGeometry().setAttribute('position',new THREE.Float32BufferAttribute(nodeArr,3)),
+        new THREE.PointsMaterial({color:INK,size:.07,map:sprite,transparent:true,opacity:.55,depthWrite:false})));
+
+      // poeira: geometria estática, movida como grupo (sem atualizar buffers por frame)
+      const N=Math.round(900*K),pos=new Float32Array(N*3);
+      for(let i=0;i<N;i++){pos[i*3]=(Math.random()-.5)*22;pos[i*3+1]=(Math.random()-.5)*14;pos[i*3+2]=10-Math.random()*80;}
+      const dustGeo=new THREE.BufferGeometry(); dustGeo.setAttribute('position',new THREE.BufferAttribute(pos,3));
+      const dust=new THREE.Points(dustGeo,new THREE.PointsMaterial({color:0x6d6f73,size:.045,map:sprite,transparent:true,opacity:.5,depthWrite:false}));
+      scene.add(dust);
+
+      const frames=[], fm=new THREE.LineBasicMaterial({color:INK,transparent:true,opacity:.22});
+      for(let i=0;i<12;i++){
+        const w=1.2+Math.random()*3.2,h=w*(.5+Math.random()*.3);
+        const f=new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.PlaneGeometry(w,h)),fm);
+        const side=i%2?1:-1;
+        f.position.set(side*(2.6+Math.random()*4),(Math.random()-.5)*5,-8-i*4.4);
+        f.rotation.set((Math.random()-.5)*.4,-side*(.3+Math.random()*.5),0);
+        f.userData.spin=(Math.random()-.5)*.002; scene.add(f); frames.push(f);
+      }
+      const deep=new THREE.LineSegments(network(4.5,Math.round(130*K),18,1),new THREE.LineBasicMaterial({color:INK,transparent:true,opacity:.14}));
+      deep.position.set(0,0,-60); scene.add(deep);
+
+      function resize(){
+        const w=innerWidth,h=innerHeight; renderer.setPixelRatio(dpr); renderer.setSize(w,h,false);
+        const rw=Math.max(2,Math.ceil(w*SMOKE)), rh=Math.max(2,Math.ceil(h*SMOKE));
+        rt.setSize(rw,rh); U.uRes.value.set(rw,rh);
+        cam.aspect=w/h; cam.updateProjectionMatrix();
+      }
+      addEventListener('resize',resize); resize();
+
+      // qualidade adaptativa: se o computador não aguenta, baixa a resolução uma vez
+      let slow=0, samples=0, downgraded=false;
+      gl3=function(t,dt){
+        if(!downgraded){ samples++; if(dt>.026) slow++;
+          if(samples>90){ if(slow/samples>.4){ dpr=1; SMOKE=.16; resize(); downgraded=true; } samples=0; slow=0; } }
+        U.uT.value=t; U.uMouse.value.set(mouse.sx,1-mouse.sy); U.uScroll.value=scrollY/innerHeight;
+        const tz=7-progress*64; cam.position.z+=(tz-cam.position.z)*.08;
+        const mx=reduce?0:mouse.sx-.5, my=reduce?0:mouse.sy-.5;
+        cam.position.x+=(mx*1.4-cam.position.x)*.05; cam.position.y+=(-my*.9-cam.position.y)*.05;
+        cam.lookAt(cam.position.x*.3,cam.position.y*.3,cam.position.z-10);
+        const sp=reduce?.15:1;
+        core.rotation.y+=.0018*sp; core.rotation.x+=.0006*sp; net2.rotation.y-=.003*sp; deep.rotation.y-=.0012*sp;
+        frames.forEach(f=>f.rotation.z+=f.userData.spin*sp);
+        dust.position.y=Math.sin(t*.05*sp)*1.6; dust.rotation.z=t*.008*sp;
+        renderer.setRenderTarget(rt); renderer.render(smokeScene,bgCam); renderer.setRenderTarget(null);
+        renderer.clear(); renderer.render(blitScene,bgCam); renderer.clearDepth(); renderer.render(scene,cam);
+      };
+      requestAnimationFrame(()=>canvas.classList.add('on'));
+    }catch(e){ console.warn('WebGL indisponível',e); }
+  }
+  function loadThree(){
+    const s=document.createElement('script');
+    s.src='https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
+    s.async=true; s.onload=initGL; document.head.appendChild(s);
+  }
+  const idle = window.requestIdleCallback || (cb=>setTimeout(cb,200));
+  if(document.readyState==='complete') idle(loadThree,{timeout:1200});
+  else addEventListener('load',()=>idle(loadThree,{timeout:1200}));
+
+  /* ---------- Sensor (simulação reativa, só desenha quando visível) ---------- */
+  const scope=document.getElementById('scope'), sctx=scope.getContext('2d');
+  const rBpm=document.getElementById('r-bpm'), rEda=document.getElementById('r-eda'), rMov=document.getElementById('r-mov'), stateEl=document.getElementById('state');
+  let energy=0, lastPX=null, lastPY=null, inside=false, scopeVisible=false;
+  const LEN=360, ecg=new Float32Array(LEN), eda=new Float32Array(LEN), mov=new Float32Array(LEN);
+  let phase=0, edaVal=0, frameN=0, W=0, H=0;
+  scope.addEventListener('pointermove',e=>{
+    inside=true;
+    if(lastPX!==null){ const v=Math.hypot(e.clientX-lastPX,e.clientY-lastPY); energy=Math.min(1,energy+v/260); }
+    lastPX=e.clientX; lastPY=e.clientY;
+  });
+  scope.addEventListener('pointerleave',()=>{inside=false; lastPX=null;});
+  function sizeScope(){ const r=scope.getBoundingClientRect(), d=Math.min(devicePixelRatio,2); W=r.width; H=r.height; scope.width=W*d; scope.height=H*d; sctx.setTransform(d,0,0,d,0,0); }
+  addEventListener('resize',sizeScope); sizeScope();
+  if('IntersectionObserver' in window){ new IntersectionObserver(es=>{ scopeVisible=es[0].isIntersecting; },{rootMargin:'100px'}).observe(scope); } else scopeVisible=true;
+  function ecgShape(p){ const g=(c,w,a)=>a*Math.exp(-Math.pow((p-c)/w,2));
+    return g(.18,.035,.12)-g(.36,.012,.15)+g(.4,.014,1)-g(.44,.014,.28)+g(.68,.06,.22); }
+  function updateScope(dt){
+    energy*=Math.pow(.25,dt);
+    const bpm=62+energy*68;
+    phase+=dt*bpm/60; if(phase>1)phase-=1;
+    edaVal+=((energy*1.0)-edaVal)*dt*.9; frameN++;
+    ecg.copyWithin(0,1); ecg[LEN-1]=ecgShape(phase)+(Math.random()-.5)*.02;
+    eda.copyWithin(0,1); eda[LEN-1]=edaVal+Math.sin(frameN*.02)*.03;
+    mov.copyWithin(0,1); mov[LEN-1]=energy*(Math.random()-.5)*1.6*(inside?1:.3);
+    return bpm;
+  }
+  const lanes=[{d:ecg,y:.3,a:.22,c:'#1d1e20',w:1.6,l:'ECG'},{d:eda,y:.7,a:.22,c:'#7d7f83',w:1.4,l:'EDA'},{d:mov,y:.86,a:.08,c:'#b4b6b9',w:1.2,l:'IMU'}];
+  function drawScope(bpm){
+    if(frameN%6===0){
+      rBpm.textContent=Math.round(bpm);
+      rEda.textContent=(2.1+edaVal*6.4).toFixed(1)+' µS';
+      rMov.textContent=Math.round(energy*100)+' %';
+      stateEl.textContent=energy>.55?'Excitado':energy>.15?'Ativo':'Em repouso';
+    }
+    sctx.clearRect(0,0,W,H);
+    sctx.strokeStyle='rgba(29,30,32,.06)'; sctx.lineWidth=1; sctx.beginPath();
+    for(let x=0;x<W;x+=40){sctx.moveTo(x+.5,0);sctx.lineTo(x+.5,H);} for(let y=0;y<H;y+=40){sctx.moveTo(0,y+.5);sctx.lineTo(W,y+.5);} sctx.stroke();
+    sctx.font='10px "IBM Plex Mono", monospace';
+    lanes.forEach((L,li)=>{
+      sctx.strokeStyle=L.c; sctx.lineWidth=L.w; sctx.beginPath();
+      for(let i=0;i<LEN;i++){ const x=i/(LEN-1)*W, y=H*L.y-L.d[i]*L.a*H; i?sctx.lineTo(x,y):sctx.moveTo(x,y); }
+      sctx.stroke();
+      sctx.fillStyle='#7d7f83'; sctx.fillText(L.l,12,H*L.y-8-(li===0?H*.2:0));
+    });
+    sctx.fillStyle='#1d1e20'; sctx.beginPath(); sctx.arc(W-2,H*.3-ecg[LEN-1]*H*.22,3,0,Math.PI*2); sctx.fill();
+  }
+  let lastBpm=62;
+  for(let i=0;i<LEN;i++) lastBpm=updateScope(1/60);
+  drawScope(lastBpm);
+
+  /* ---------- parallax DOM (medidas em cache, sem ler o layout por frame) ---------- */
+  const depthEls=[...document.querySelectorAll('[data-depth]')].map(el=>({el,k:parseFloat(el.dataset.depth),c:0,h:0,mode:'y'}));
+  const shiftEls=[...document.querySelectorAll('[data-shift]')].map(el=>({el,k:parseFloat(el.dataset.shift),c:0,mode:'x'}));
+  function measure(){
+    const sy=window.scrollY;
+    depthEls.forEach(o=>{ const r=o.el.parentElement.getBoundingClientRect(); o.c=r.top+sy+r.height/2; });
+    shiftEls.forEach(o=>{ const r=o.el.parentElement.getBoundingClientRect(); o.c=r.top+sy; });
+    maxScroll=Math.max(document.documentElement.scrollHeight-innerHeight,1);
+  }
+  addEventListener('resize',measure); addEventListener('load',measure);
+  if(document.fonts&&document.fonts.ready) document.fonts.ready.then(measure);
+  measure();
+  const logo=document.getElementById('logo'), glyphs=[...logo.querySelectorAll('.g')].map(g=>({g,z:parseFloat(g.dataset.z)}));
+  let lastKey='';
+  function domParallax(){
+    const key=scrollY+'|'+mouse.sx.toFixed(3)+'|'+mouse.sy.toFixed(3);
+    if(key===lastKey) return; lastKey=key;
+    const vh=innerHeight;
+    depthEls.forEach(o=>{ o.el.style.transform=`translate3d(0,${((o.c-scrollY-vh/2)*o.k).toFixed(1)}px,0)`; });
+    shiftEls.forEach(o=>{ o.el.style.transform=`translate3d(${((o.c-scrollY-vh/2)*o.k).toFixed(1)}px,0,0)`; });
+    if(scrollY<vh*1.3){
+      const mx=reduce?0:mouse.sx-.5, my=reduce?0:mouse.sy-.5, k=Math.min(scrollY/vh,1.2);
+      logo.style.transform=`rotateY(${(mx*16).toFixed(2)}deg) rotateX(${(-my*12+k*28).toFixed(2)}deg) translateZ(${(-k*100).toFixed(1)}px)`;
+      glyphs.forEach((o,i)=>{ o.g.style.transform=`translate(${(mx*o.z*.25).toFixed(2)}px,${(my*o.z*.2-scrollY*o.z*.004*(i%2?1:-1)).toFixed(2)}px)`; });
+    }
+  }
+
+  document.querySelectorAll('.tilt').forEach(card=>{
+    card.addEventListener('pointermove',e=>{ if(reduce)return; const r=card.getBoundingClientRect();
+      const x=(e.clientX-r.left)/r.width,y=(e.clientY-r.top)/r.height;
+      card.style.transform=`rotateY(${((x-.5)*10).toFixed(2)}deg) rotateX(${((.5-y)*8).toFixed(2)}deg) translateZ(10px)`; });
+    card.addEventListener('pointerleave',()=>card.style.transform='');
+  });
+
+  let last=performance.now(), t=0;
+  function frame(now){
+    const dt=Math.min((now-last)/1000,.05); last=now; t+=dt*(reduce?.2:1);
+    mouse.sx+=(mouse.x-mouse.sx)*.06; mouse.sy+=(mouse.y-mouse.sy)*.06;
+    if(!coarse){ mouse.rx+=(mouse.px-mouse.rx)*.2; mouse.ry+=(mouse.py-mouse.ry)*.2;
+      ring.style.transform=`translate3d(${mouse.rx.toFixed(1)}px,${mouse.ry.toFixed(1)}px,0)`; }
+    progress=Math.min(Math.max(scrollY/maxScroll,0),1);
+    domParallax();
+    lastBpm=updateScope(dt); if(scopeVisible) drawScope(lastBpm);
+    if(gl3) gl3(t,dt);
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+
+  document.getElementById('copymail').addEventListener('click',e=>{
+    const b=e.currentTarget;
+    const sel=()=>{const r=document.createRange();r.selectNodeContents(document.getElementById('mail'));const s=getSelection();s.removeAllRanges();s.addRange(r);b.textContent='Seleccionado';};
+    try{navigator.clipboard.writeText('limbus.interactive@gmail.com').then(()=>{b.textContent='Copiado';setTimeout(()=>b.textContent='Copiar',1800);}).catch(sel);}catch(err){sel();}
+  });
+})();
+</script>
+</body>
+</html>
